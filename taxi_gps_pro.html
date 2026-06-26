@@ -1,0 +1,18 @@
+
+<!doctype html><html lang='vi'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Taxi GPS Pro</title><style>
+body{font-family:Arial;background:#111;color:#fff;text-align:center}button{font-size:18px;padding:10px;margin:4px} .v{font-size:34px}
+</style></head><body><h2>Taxi GPS Pro</h2>
+<div>KM<div id=k class=v>0.000</div></div><div>Tiền<div id=f class=v>27.500 đ</div></div>
+<div>Tốc độ: <span id=s>0</span> km/h | Thời gian: <span id=tm>00:00:00</span></div>
+<div>GPS: <span id=g>Chưa bắt đầu</span></div>
+<button onclick=start()>Bắt đầu</button><button onclick=pause()>Tạm dừng</button><button onclick=resetAll()>Đặt lại</button>
+<script>
+let w,last=null,km=0,run=false,startT,elapsed=0,timer;
+function fare(d){if(d<=2)return 27500;let f=27500,r=d-2,a=Math.min(r,10);f+=a*13200;r-=a;if(r>0){let b=Math.min(r,13);f+=b*12400;r-=b;}if(r>0)f+=r*10700;return Math.round(f);}
+function D(a,b){const R=6371000,t=x=>x*Math.PI/180;let d1=t(b.lat-a.lat),d2=t(b.lon-a.lon),A=Math.sin(d1/2)**2+Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(d2/2)**2;return 2*R*Math.asin(Math.sqrt(A));}
+function tick(){let e=elapsed+(Date.now()-startT);let s=Math.floor(e/1000),h=(s/3600|0),m=((s%3600)/60|0),ss=s%60;tm.textContent=[h,m,ss].map(x=>String(x).padStart(2,"0")).join(":");}
+function start(){if(run)return;run=true;startT=Date.now();timer=setInterval(tick,1000);w=navigator.geolocation.watchPosition(p=>{g.textContent="Đã kết nối";let c={lat:p.coords.latitude,lon:p.coords.longitude};s.textContent=(p.coords.speed>0?p.coords.speed*3.6:0).toFixed(1);if(last){let m=D(last,c);if(m>5)km+=m/1000;}last=c;k.textContent=km.toFixed(3);f.textContent=fare(km).toLocaleString('vi-VN')+" đ";},{enableHighAccuracy:true,maximumAge:0,timeout:10000});}
+function pause(){if(!run)return;run=false;elapsed+=Date.now()-startT;clearInterval(timer);navigator.geolocation.clearWatch(w);}
+function resetAll(){pause();last=null;km=0;elapsed=0;k.textContent="0.000";f.textContent="27.500 đ";s.textContent="0";tm.textContent="00:00:00";g.textContent="Đã đặt lại";}
+</script></body></html>
